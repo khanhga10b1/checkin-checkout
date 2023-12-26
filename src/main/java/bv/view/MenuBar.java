@@ -37,12 +37,13 @@ public class MenuBar {
         PopupMenu popup = new PopupMenu();
         MenuItem openMenuItem = new MenuItem("Hide Application");
         openMenuItem.addActionListener(e -> {
-            if (!frame.isDisplayable()) {
-                frame.setVisible(true);
+            if (frame == null) {
+                setFrame(new AutoCICOFrame(), openMenuItem);
             } else {
                 frame.dispose();
+                frame = null;
             }
-            openMenuItem.setLabel(!frame.isDisplayable() ? "Show Application" : "Hide Application");
+            openMenuItem.setLabel(frame == null ? "Show Application" : "Hide Application");
         });
         popup.add(openMenuItem);
 
@@ -50,6 +51,7 @@ public class MenuBar {
             @Override
             public void windowClosing(WindowEvent e) {
                 frame.dispose();
+                frame = null;
                 openMenuItem.setLabel("Show Application");
             }
         });
@@ -62,5 +64,18 @@ public class MenuBar {
         TrayIcon trayIcon = new TrayIcon(trayIconImage, "Your Application", popup);
         trayIcon.setImageAutoSize(true);
         ObjectUtils.callFunction(() -> SystemTray.getSystemTray().add(trayIcon));
+    }
+
+    private void setFrame(AutoCICOFrame fr, MenuItem menuItem) {
+        frame = fr;
+        this.frame.setVisible(true);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                frame.dispose();
+                frame = null;
+                menuItem.setLabel("Show Application");
+            }
+        });
     }
 }

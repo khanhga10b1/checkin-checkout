@@ -179,7 +179,6 @@ public class CICOServiceImpl implements CICOService {
                  BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
                 LoginPayload loginPayload = new LoginPayload(false, encryptPassword, ObjectUtils.nullOrBlank(userName) ? USERNAME_DEFAULT : userName);
                 String payload = objectMapper.writeValueAsString(loginPayload);
-                System.out.println(loginPayload.toString());
                 writer.write(payload);
             }
 
