@@ -5,6 +5,7 @@ import bv.service.CICOService;
 import bv.service.CICOServiceImpl;
 import bv.utils.FileUtils;
 import bv.utils.ObjectUtils;
+import bv.utils.PopupUtils;
 import bv.view.AutoCICOFrame;
 import bv.view.MenuBar;
 
@@ -21,14 +22,13 @@ public class Main {
         createRootFolderAndInitFile();
         CICOService cicoService = CICOServiceImpl.getInstance();
         cicoService.checkinCheckoutWithToken(FileUtils.loadFromFile(TOKEN_FILE));
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            new MenuBar(new AutoCICOFrame());
-            cicoService.autoCICO(List.of(new ScheduleTask(8, 25),
-                    new ScheduleTask(12, 1),
-                    new ScheduleTask(15, 1),
-                    new ScheduleTask(17, 0)
-            ));
-        });
+        javax.swing.SwingUtilities.invokeLater(() -> new MenuBar(new AutoCICOFrame()));
+
+        cicoService.autoCICO(List.of(new ScheduleTask(8, 25),
+                new ScheduleTask(12, 1),
+                new ScheduleTask(15, 1),
+                new ScheduleTask(17, 0)
+        ), PopupUtils::showSuccess);
     }
 
     private static void createRootFolderAndInitFile() {

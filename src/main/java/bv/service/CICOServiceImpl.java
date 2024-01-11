@@ -3,6 +3,7 @@ package bv.service;
 import bv.domain.CICOPayload;
 import bv.domain.LoginPayload;
 import bv.domain.ScheduleTask;
+import bv.utils.NoParamCallback;
 import bv.utils.ObjectUtils;
 import bv.utils.PopupUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -45,9 +46,14 @@ public class CICOServiceImpl implements CICOService {
 
 
     @Override
-    public void autoCICO(List<ScheduleTask> tasks) {
+    public void autoCICO(List<ScheduleTask> tasks, NoParamCallback callback) {
         Timer timer = new Timer(true);
-        tasks.forEach(task -> scheduleTask(timer, task));
+        tasks.forEach(task -> scheduleTask(timer, task, callback));
+    }
+
+    @Override
+    public void autoCICO(List<ScheduleTask> tasks) {
+        autoCICO(tasks, null);
     }
 
     @Override
@@ -92,18 +98,23 @@ public class CICOServiceImpl implements CICOService {
         return success;
     }
 
-    private void scheduleTask(Timer timer, ScheduleTask task) {
+    public void scheduleTask(Timer timer, ScheduleTask task) {
+        scheduleTask(timer, task, null);
+    }
+
+    private void scheduleTask(Timer timer, ScheduleTask task, NoParamCallback callback) {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-
-                if (!isWeekend() && !nowGtTime(task.getHour(), task.getMinute())) {
-                    if(!checkinCheckoutWithToken(loadFromFile(TOKEN_FILE))) {
-                        checkinCheckoutWithUser(null, null);
-                    } else {
-                        PopupUtils.showSuccess();
+                ObjectUtils.callFunction(() -> {
+                    if (!isWeekend() && !nowGtTime(task.getHour(), task.getMinute())) {
+                        if (!checkinCheckoutWithToken(loadFromFile(TOKEN_FILE))) {
+                            checkinCheckoutWithUser(null, null);
+                        } else if (Objects.nonNull(callback)) {
+                            ObjectUtils.callFunction(callback);
+                        }
                     }
-                }
+                });
             }
         }, getStartTime(task), 24 * 60 * 60 * 1000); // 24 hours interval
     }
@@ -187,7 +198,7 @@ public class CICOServiceImpl implements CICOService {
                 Map<String, Object> tokenMap = objectMapper.readValue(getResponseData(connection), new TypeReference<>() {
                 });
                 saveToFile(tokenMap.get("access_token").toString(), TOKEN_FILE);
-                if(checkinCheckoutWithToken(tokenMap.get("access_token").toString())) {
+                if (checkinCheckoutWithToken(tokenMap.get("access_token").toString())) {
                     PopupUtils.showSuccess();
                 }
             } else {
