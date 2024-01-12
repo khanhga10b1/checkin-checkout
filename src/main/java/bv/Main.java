@@ -8,7 +8,10 @@ import bv.utils.ObjectUtils;
 import bv.utils.PopupUtils;
 import bv.view.AutoCICOFrame;
 import bv.view.MenuBar;
+import com.apple.eawt.Application;
 
+import java.awt.desktop.ScreenSleepEvent;
+import java.awt.desktop.ScreenSleepListener;
 import java.io.File;
 import java.util.List;
 
@@ -24,11 +27,31 @@ public class Main {
         cicoService.checkinCheckoutWithToken(FileUtils.loadFromFile(TOKEN_FILE));
         javax.swing.SwingUtilities.invokeLater(() -> new MenuBar(new AutoCICOFrame()));
 
+        if (isMacOs()) {
+            Application application = Application.getApplication();
+
+            application.addAppEventListener(new ScreenSleepListener() {
+                @Override
+                public void screenAboutToSleep(ScreenSleepEvent e) {
+                    ObjectUtils.callFunction(() -> cicoService.checkinCheckoutWithToken(FileUtils.loadFromFile(TOKEN_FILE)));
+                }
+
+                @Override
+                public void screenAwoke(ScreenSleepEvent e) {
+                    ObjectUtils.callFunction(() -> cicoService.checkinCheckoutWithToken(FileUtils.loadFromFile(TOKEN_FILE)));
+                }
+            });
+        }
+
         cicoService.autoCICO(List.of(new ScheduleTask(8, 25),
                 new ScheduleTask(12, 1),
                 new ScheduleTask(15, 1),
                 new ScheduleTask(17, 0)
         ), PopupUtils::showSuccess);
+    }
+
+    private static boolean isMacOs() {
+        return System.getProperty("os.name").toLowerCase().contains("mac");
     }
 
     private static void createRootFolderAndInitFile() {
