@@ -10,5 +10,5 @@ public class Constant {
     public static final String CICO = "ci-co";
     public static final String PREFLIGHT = "auth/pre-flight";
     public static final String USERNAME_DEFAULT = "khanh.ho";
-    public static final String PASSWORD_DEFAULT = "12345678#K1";
+    public static final String PASSWORD_DEFAULT = "12345678$K1";
 }

@@ -1,5 +1,9 @@
 package bv.view;
 
+import bv.service.CICOService;
+import bv.service.CICOServiceImpl;
+import bv.utils.Constant;
+import bv.utils.FileUtils;
 import bv.utils.ObjectUtils;
 
 import javax.imageio.ImageIO;
@@ -10,12 +14,15 @@ import java.awt.event.WindowEvent;
 
 public class MenuBar {
     private JFrame frame;
+    private final CICOService cicoService;
 
 
     private MenuBar() {
+        this.cicoService = CICOServiceImpl.getInstance();
     }
 
     public MenuBar(JFrame frame) {
+        this();
         this.frame = frame;
         initComponent();
     }
@@ -47,6 +54,8 @@ public class MenuBar {
         });
         popup.add(openMenuItem);
 
+
+
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -55,6 +64,11 @@ public class MenuBar {
                 openMenuItem.setLabel("Show Application");
             }
         });
+
+
+        MenuItem CICO = new MenuItem("Checkin/Checkout");
+        CICO.addActionListener(e -> cicoService.checkinCheckoutWithToken(FileUtils.loadFromFile(Constant.TOKEN_FILE)));
+        popup.add(CICO);
 
         MenuItem exitMenuItem = new MenuItem("Exit");
         exitMenuItem.addActionListener(e -> System.exit(0));
